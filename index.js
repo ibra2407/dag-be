@@ -33,10 +33,10 @@ app.listen(PORT, () => {
     console.log(`Running on PORT ${PORT}`)
 });
 
-// allows post requests *** what is /addApi?
-app.post("/api/addApi", (req, res) => {
-    res.status(200).send(req.body);
-});
+// allows post requests *** what is /addApi? --not in use
+// app.post("/api/addApi", (req, res) => {
+//     res.status(200).send(req.body);
+// });
 
 // app.get("/api/appDetails/:id", (req, res) => {
 
