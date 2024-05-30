@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv'
+import AWS from 'aws-sdk'
+import multer from 'multer';
 
 // imports all routes.js functions as routes.js returns router object
 import users from './routes.js'
@@ -25,6 +27,33 @@ app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+const s3 = new AWS.S3({
+    accessKeyId: process.env.BUCKET_KEY,
+    secretAccessKey: process.env.BUCKET_SECRET_KEY,
+    region: process.env.BUCKET_REGION
+});
+
+// Endpoint to upload image
+app.post('/api/upload', upload.single('image'), (req, res) => {
+    const params = {
+        Bucket: process.env.BUCKET_NAME,
+        Key: `images/${req.file.originalname}`,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype,
+        ACL: 'public-read'
+    };
+
+    s3.upload(params, (error, data) => {
+        if (error) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+        return res.json({ success: true, data });
+    });
+});
+
 // when running backend on localhost, will talk to api "localhost:8000/api/users", where users is the database table name
 app.use('/api', users);
 
@@ -32,21 +61,5 @@ app.use('/api', users);
 app.listen(PORT, () => {
     console.log(`Running on PORT ${PORT}`)
 });
-
-// allows post requests *** what is /addApi? --not in use
-// app.post("/api/addApi", (req, res) => {
-//     res.status(200).send(req.body);
-// });
-
-// app.get("/api/appDetails/:id", (req, res) => {
-
-//     const appDetails = {
-//         appName: "App Name",
-//         appLink: "App Link",
-//         appDescription: "App Description"
-//     };
-//     console.log(req.params.id);
-//     res.status(200).send(appDetails);
-// });
 
 
