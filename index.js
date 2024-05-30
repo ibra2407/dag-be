@@ -36,14 +36,13 @@ const s3 = new AWS.S3({
     region: process.env.BUCKET_REGION
 });
 
-// Endpoint to upload image
+// s3 endpoint got image uploading
 app.post('/api/upload', upload.single('image'), (req, res) => {
     const params = {
         Bucket: process.env.BUCKET_NAME,
         Key: `images/${req.file.originalname}`,
         Body: req.file.buffer,
-        ContentType: req.file.mimetype,
-        ACL: 'public-read'
+        ContentType: req.file.mimetype
     };
 
     s3.upload(params, (error, data) => {
