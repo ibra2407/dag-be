@@ -1,19 +1,23 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv'
-import AWS from 'aws-sdk'
+import dotenv from 'dotenv';
+import AWS from 'aws-sdk';
 import multer from 'multer';
 
 // imports all routes.js functions as routes.js returns router object
-import users from './routes.js'
+import users from './routes.js';
+
+// import AWS SDK v3 modules for S3 and presigned URL generation
+import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // takes in secret keys from .env file
-dotenv.config()
+dotenv.config();
 
 const app = express();
 
-// define backend localhost
+// define backend localhost port
 const PORT = process.env.PORT || 8000;
 
 app.use(express.json());  // to parse the incoming request with JSON payloads
@@ -36,7 +40,15 @@ const s3 = new AWS.S3({
     region: process.env.BUCKET_REGION
 });
 
-// s3 endpoint got image uploading
+const s3Client = new S3Client({
+    region: process.env.BUCKET_REGION,
+    credentials: {
+        accessKeyId: process.env.BUCKET_KEY,
+        secretAccessKey: process.env.BUCKET_SECRET_KEY
+    }
+});
+
+// S3 endpoint for image uploading
 app.post('/api/upload', upload.single('image'), (req, res) => {
     const params = {
         Bucket: process.env.BUCKET_NAME,
@@ -53,12 +65,42 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     });
 });
 
+// S3 endpoint to list objects in S3 bucket and generate presigned URLs
+app.get('/api/list', async (req, res) => {
+    const params = {
+        Bucket: process.env.BUCKET_NAME,
+    };
+
+    try {
+        const command = new ListObjectsV2Command(params);
+        const data = await s3Client.send(command);
+
+        const objects = await Promise.all(
+            data.Contents.map(async (obj) => {
+                const getObjectParams = {
+                    Bucket: process.env.BUCKET_NAME,
+                    Key: obj.Key
+                };
+
+                const command = new GetObjectCommand(getObjectParams);
+                const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+                return {
+                    ...obj,
+                    url
+                };
+            })
+        );
+
+        return res.json({ success: true, data: objects });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // when running backend on localhost, will talk to api "localhost:8000/api/users", where users is the database table name
 app.use('/api', users);
 
-
 app.listen(PORT, () => {
-    console.log(`Running on PORT ${PORT}`)
+    console.log(`Running on PORT ${PORT}`);
 });
-
-
