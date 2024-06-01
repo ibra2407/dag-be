@@ -9,7 +9,7 @@ import multer from 'multer';
 import users from './routes.js';
 
 // import AWS SDK v3 modules for S3 and presigned URL generation
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // takes in secret keys from .env file
@@ -34,13 +34,7 @@ app.use(bodyParser.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const s3 = new AWS.S3({
-    accessKeyId: process.env.BUCKET_KEY,
-    secretAccessKey: process.env.BUCKET_SECRET_KEY,
-    region: process.env.BUCKET_REGION
-});
-
-const s3Client = new S3Client({
+const s3 = new S3Client({
     region: process.env.BUCKET_REGION,
     credentials: {
         accessKeyId: process.env.BUCKET_KEY,
@@ -65,34 +59,18 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     });
 });
 
-// S3 endpoint to list objects in S3 bucket and generate presigned URLs
-app.get('/api/list', async (req, res) => {
+// S3 endpoint to generate presigned URL for a specific object
+app.get('/api/get/:key', async (req, res) => {
     const params = {
         Bucket: process.env.BUCKET_NAME,
+        Key: req.params.key
     };
 
     try {
-        const command = new ListObjectsV2Command(params);
-        const data = await s3Client.send(command);
+        const command = new GetObjectCommand(params);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
 
-        const objects = await Promise.all(
-            data.Contents.map(async (obj) => {
-                const getObjectParams = {
-                    Bucket: process.env.BUCKET_NAME,
-                    Key: obj.Key
-                };
-
-                const command = new GetObjectCommand(getObjectParams);
-                const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-                return {
-                    ...obj,
-                    url
-                };
-            })
-        );
-
-        return res.json({ success: true, data: objects });
+        return res.json({ success: true, url });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
