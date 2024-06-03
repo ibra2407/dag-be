@@ -1,3 +1,4 @@
+// Public bucket version
 import dotenv from 'dotenv';
 import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
