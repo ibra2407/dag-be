@@ -57,7 +57,7 @@ const getUserById = async (value, key = 'id') => {
     }
 }
 
-// Delete Record by App
+// Delete Record by id
 const deleteUserById = async(value, key = 'id' ) => { 
     const params = {
         TableName: Table,
