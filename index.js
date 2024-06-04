@@ -77,7 +77,7 @@ app.get('/api/get/:key', async (req, res) => {
     }
 });
 
-// S3 endpoint to list all objects in the bucket
+// S3 endpoint to list all objects in the bucket; will return presigned url
 app.get('/api/list', async (req, res) => {
     const params = {
         Bucket: process.env.BUCKET_NAME
