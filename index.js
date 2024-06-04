@@ -80,13 +80,13 @@ app.get('/api/get/:key', async (req, res) => {
 // S3 endpoint to list all objects in the bucket
 app.get('/api/list', async (req, res) => {
     const params = {
-        Bucket: process.env.BUCKET_NAME,
-        Prefix: '/'
+        Bucket: process.env.BUCKET_NAME
     };
 
     try {
         const command = new ListObjectsV2Command(params);
         const data = await s3.send(command);
+        console.log(data)
         const keys = await Promise.all(data.Contents.map(async item => {
             const url = await getSignedUrl(s3, new GetObjectCommand({ Bucket: params.Bucket, Key: item.Key }), { expiresIn: 3600 });
             return { ...item, url };
