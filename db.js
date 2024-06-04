@@ -9,7 +9,7 @@ AWS.config.update({
     secretAccessKey: process.env.DB_SECRET_ACCESS_KEY
 })
 
-const db = new AWS.DynamoDB.DocumentClient()
+const DyDB = new AWS.DynamoDB.DocumentClient()
 
 const Table = 'users'
 
@@ -21,7 +21,7 @@ const createOrUpdate = async (data = {}) =>{
     }
 
     try{
-        await db.put(params).promise()
+        await DyDB.put(params).promise()
         return { success: true }
     } catch(error){
         return { success: false}
@@ -35,7 +35,7 @@ const readAllUsers = async()=>{
     }
 
     try{
-        const { Items = [] } = await db.scan(params).promise()
+        const { Items = [] } = await DyDB.scan(params).promise()
         return { success: true, data: Items }
 
     } catch(error){
@@ -53,7 +53,7 @@ const getUserById = async (value, key = 'id') => {
         }
     }
     try {
-        const { Item = {} } =  await db.get(params).promise()
+        const { Item = {} } =  await DyDB.get(params).promise()
         return { success: true, data: Item }
     } catch (error) {
         return {  success: false, data: null}        
@@ -70,7 +70,7 @@ const deleteUserById = async(value, key = 'id' ) => {
     }
         
     try {
-        await db.delete(params).promise()
+        await DyDB.delete(params).promise()
         return {  success: true }
 
     } catch (error) {

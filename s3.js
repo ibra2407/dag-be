@@ -1,4 +1,4 @@
-import { S3Client, GetObjectCommand, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import dotenv from 'dotenv';
 import multer from 'multer';
@@ -72,4 +72,20 @@ const listObjects = async () => {
     }
 };
 
-export { upload, uploadImage, generatePresignedUrl, listObjects };
+// Function to delete an object from the S3 bucket
+const deleteImage = async (key) => {
+    const params = {
+        Bucket: process.env.BUCKET_NAME,
+        Key: key
+    };
+
+    try {
+        const command = new DeleteObjectCommand(params);
+        const response = await s3.send(command); // Send the command and await the response
+        return { success: true, response }; // Return success along with the response
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+export { upload, uploadImage, generatePresignedUrl, listObjects, deleteImage };
