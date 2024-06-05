@@ -10,7 +10,7 @@ router.get('/users', async(req, res) => {
     if(success){
         return res.json({success, data})
     }
-    return res.status(500).json({success:false, messsage: "Error"})
+    return res.status(500).json({success:false, messsage: "DB Error in reading all users"})
 })
 
 // Get a specific user by ID
@@ -22,13 +22,13 @@ router.get('/users/:id', async(req, res) => {
         return res.json({success, data})
     }
 
-    return res.status(500).json({success: false, message: "Error"})
+    return res.status(500).json({success: false, message: "DB Error in getting user by id"})
 })
 
 
 // Create a new user in the database
 router.post('/users', async(req, res) => {
-    const userID = parseInt(req.body.id);
+    const userID = req.body.id;
     const userData = {...req.body, id: userID};
     const { success, data } = await createOrUpdate(userData)
 
@@ -36,7 +36,7 @@ router.post('/users', async(req, res) => {
         return res.json({success, data})
     }
 
-    return res.status(500).json({success: false, message: 'Error'})
+    return res.status(500).json({success: false, message: 'DB Error in creating new user'})
 })
 
 
@@ -44,7 +44,7 @@ router.post('/users', async(req, res) => {
 router.put('/users/:id', async(req, res) => {
     const users = req.body
     const { id } = req.params
-    users.id = parseInt(id)
+    users.id = id
 
     const { success, data } = await createOrUpdate(users)
 
@@ -52,7 +52,7 @@ router.put('/users/:id', async(req, res) => {
         return res.json({success, data})
     }
 
-    return res.status(500).json({success: false, message: "Error"})
+    return res.status(500).json({success: false, message: "DB Error in updating user by id"})
 })
 
 
@@ -63,8 +63,7 @@ router.delete('/users/:id', async (req, res) => {
     if (success) {
       return res.json({ success, data })
     }
-    return res.status(500).json({ success: false, message: 'Error'})
+    return res.status(500).json({ success: false, message: 'DB Error in deleting user by id'})
 })
-
 
 export default router

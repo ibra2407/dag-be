@@ -9,7 +9,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
         await uploadImage(req, res);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: "S3 Error in uploading image" });
     }
 });
 
@@ -22,19 +22,19 @@ router.get('/get/:key', async (req, res) => {
         const response = await generatePresignedUrl(req.params.key);
         res.json(response);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: "S3 Error in generating presigned URL" });
     }
 });
 
-// Route to list all objects in the S3 bucket
-router.get('/list', async (req, res) => {
-    try {
-        const response = await listObjects();
-        res.json(response);
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
+// Route to list all objects in the S3 bucket - commented out to stop it from calling the listObjects function
+// router.get('/list', async (req, res) => {
+//     try {
+//         const response = await listObjects();
+//         res.json(response);
+//     } catch (error) {
+//         res.status(500).json({ success: false, message: "S3 Error in listing objects" });
+//     }
+// });
 
 // Route to delete an object from the S3 bucket
 router.delete('/delete/:key', async (req, res) => {
@@ -45,7 +45,7 @@ router.delete('/delete/:key', async (req, res) => {
     if (response.success) {
         res.json(response);
     } else {
-        res.status(500).json(response);
+        res.status(500).json({ success: false, message: "S3 Error in deleting image" });
     }
 });
 

@@ -9,6 +9,7 @@ AWS.config.update({
     secretAccessKey: process.env.DB_SECRET_ACCESS_KEY
 })
 
+// dynamo db object instance
 const DyDB = new AWS.DynamoDB.DocumentClient()
 
 const Table = 'users'
@@ -49,7 +50,7 @@ const getUserById = async (value, key = 'id') => {
     const params = {
         TableName: Table,
         Key: {
-            [key]: parseInt(value)
+            [key]: value
         }
     }
     try {
@@ -65,7 +66,7 @@ const deleteUserById = async(value, key = 'id' ) => {
     const params = {
         TableName: Table,
         Key: {
-            [key]: parseInt(value)
+            [key]: value
         }
     }
         
